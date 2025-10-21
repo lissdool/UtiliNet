@@ -1,6 +1,7 @@
 class DelayCalculator {
     constructor() {
-        this.apiBaseUrl = 'http://localhost:5000/api';
+        // 云函数API端点
+        this.apiBaseUrl = '/api';
         this.chart = null;
         this.init();
     }
@@ -42,12 +43,26 @@ class DelayCalculator {
         try {
             const response = await fetch(`${this.apiBaseUrl}/health`);
             if (response.ok) {
-                this.showStatus('API server is connected and ready', 'success');
+                this.showStatus('云函数API已连接并准备就绪', 'success');
             } else {
-                this.showStatus('API server is not responding properly', 'warning');
+                this.showStatus('云函数API响应异常', 'warning');
             }
         } catch (error) {
-            this.showStatus('Cannot connect to API server. Make sure the backend is running on port 5000.', 'error');
+            this.showStatus('无法连接到云函数API。请确保网络连接正常。', 'error');
+        }
+    }
+
+    // 延迟计算函数（基于M/M/1队列模型）
+    calculateDelayValue(baseDelay, utilization) {
+        if (utilization >= 0.99) {
+            return baseDelay * 100; // 拥塞时高延迟惩罚
+        } else if (utilization <= 0.01) {
+            return baseDelay; // 低利用率时的基础延迟
+        } else {
+            // 标准排队模型：总延迟 = 传输延迟 + 排队延迟
+            const transmissionDelay = baseDelay;
+            const queueDelay = (utilization / (1 - utilization)) * (baseDelay / 2);
+            return transmissionDelay + queueDelay;
         }
     }
 
@@ -60,7 +75,7 @@ class DelayCalculator {
             return;
         }
 
-        this.showLoading('calculateBtn', 'Calculating...');
+        this.showLoading('calculateBtn', '计算中...');
 
         try {
             const response = await fetch(`${this.apiBaseUrl}/calculate_delay`, {
@@ -78,14 +93,14 @@ class DelayCalculator {
 
             if (response.ok && data.success) {
                 this.displayResults(data);
-                this.showStatus('Delay calculated successfully!', 'success');
+                this.showStatus('延迟计算成功！', 'success');
             } else {
-                this.showError(data.error || 'Failed to calculate delay');
+                this.showError(data.error || '计算失败');
             }
         } catch (error) {
-            this.showError('Network error: ' + error.message);
+            this.showError('网络错误: ' + error.message);
         } finally {
-            this.hideLoading('calculateBtn', 'Calculate Delay');
+            this.hideLoading('calculateBtn', '计算延迟');
         }
     }
 
@@ -93,11 +108,11 @@ class DelayCalculator {
         const baseDelay = parseFloat(document.getElementById('baseDelay').value);
 
         if (!baseDelay || baseDelay <= 0) {
-            this.showError('Please enter a valid base delay');
+            this.showError('请输入有效的基础延迟');
             return;
         }
 
-        this.showLoading('generateCurveBtn', 'Generating...');
+        this.showLoading('generateCurveBtn', '生成中...');
 
         try {
             const response = await fetch(`${this.apiBaseUrl}/generate_curve`, {
@@ -114,25 +129,25 @@ class DelayCalculator {
 
             if (response.ok && data.success) {
                 this.displayChart(data);
-                this.showStatus('Delay curve generated successfully!', 'success');
+                this.showStatus('延迟曲线生成成功！', 'success');
             } else {
-                this.showError(data.error || 'Failed to generate delay curve');
+                this.showError(data.error || '生成曲线失败');
             }
         } catch (error) {
-            this.showError('Network error: ' + error.message);
+            this.showError('网络错误: ' + error.message);
         } finally {
-            this.hideLoading('generateCurveBtn', 'Generate Delay Curve');
+            this.hideLoading('generateCurveBtn', '生成延迟曲线');
         }
     }
 
     validateInputs(baseDelay, utilization) {
         if (!baseDelay || baseDelay <= 0) {
-            this.showError('Base delay must be a positive number');
+            this.showError('基础延迟必须是正数');
             return false;
         }
 
         if (utilization === null || utilization === undefined || utilization < 0 || utilization > 1) {
-            this.showError('Utilization must be between 0 and 1');
+            this.showError('链路利用率必须在0到1之间');
             return false;
         }
 
@@ -243,7 +258,7 @@ class DelayCalculator {
         // 清除状态消息
         this.clearMessages();
 
-        this.showStatus('Results cleared', 'info');
+        this.showStatus('结果已清除', 'info');
     }
 
     showLoading(buttonId, loadingText) {

@@ -1,0 +1,28 @@
+{
+  "name": "utilinet",
+  "description": "Network Delay Calculator with Cloud Function Backend",
+  "version": "1.0.0",
+  "type": "static",
+  "build": {
+    "command": "echo 'No build required for static files'",
+    "output": "frontend"
+  },
+  "functions": {
+    "api": {
+      "runtime": "Nodejs16.13",
+      "handler": "index.main_handler",
+      "memory": 128,
+      "timeout": 30
+    }
+  },
+  "routes": [
+    {
+      "path": "/api/*",
+      "target": "api"
+    },
+    {
+      "path": "/*",
+      "target": "static"
+    }
+  ]
+}
