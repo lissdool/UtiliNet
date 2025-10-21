@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Delay Calculator</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Network Delay Calculator</h1>
+            <p>Interactive tool for calculating network path delays based on utilization</p>
+        </header>
+
+        <div class="main-content">
+            <!-- 参数输入区域 -->
+            <div class="input-section">
+                <h2>Delay Calculation Parameters</h2>
+                
+                <div class="input-group">
+                    <label for="baseDelay">Base Delay (ms):</label>
+                    <input type="number" id="baseDelay" value="20" min="1" step="1">
+                    <span class="help-text">Base transmission delay of the path</span>
+                </div>
+
+                <div class="input-group">
+                    <label for="utilization">Link Utilization (0-1):</label>
+                    <input type="number" id="utilization" value="0.5" min="0" max="1" step="0.01">
+                    <span class="help-text">Current utilization of the link (0.0 to 1.0)</span>
+                </div>
+
+                <div class="button-group">
+                    <button id="calculateBtn" class="btn btn-primary">Calculate Delay</button>
+                    <button id="generateCurveBtn" class="btn btn-secondary">Generate Delay Curve</button>
+                    <button id="clearBtn" class="btn btn-outline">Clear Results</button>
+                </div>
+            </div>
+
+            <!-- 结果显示区域 -->
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <h2>Calculation Results</h2>
+                <div class="result-card">
+                    <div class="result-item">
+                        <span class="label">Base Delay:</span>
+                        <span id="resultBaseDelay" class="value">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="label">Utilization:</span>
+                        <span id="resultUtilization" class="value">-</span>
+                    </div>
+                    <div class="result-item highlight">
+                        <span class="label">Calculated Delay:</span>
+                        <span id="resultDelay" class="value">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="label">Delay Ratio:</span>
+                        <span id="resultRatio" class="value">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 图表区域 -->
+            <div class="chart-section" id="chartSection" style="display: none;">
+                <h2>Delay vs Utilization Curve</h2>
+                <div class="chart-container">
+                    <canvas id="delayChart"></canvas>
+                </div>
+                <div class="chart-info">
+                    <p>This chart shows how delay increases with link utilization. The curve demonstrates the congestion penalty effect.</p>
+                </div>
+            </div>
+
+            <!-- 状态信息 -->
+            <div class="status-section">
+                <div id="statusMessage" class="status-message"></div>
+                <div id="errorMessage" class="error-message" style="display: none;"></div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Network Delay Calculator - Based on M/M/1 Queue Model</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
